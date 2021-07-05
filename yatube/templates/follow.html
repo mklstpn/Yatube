@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Подписан{% endblock %}
+{% block header %}Подписан{% endblock %}
+{% block content %}
+    {% load cache %}
+    {# cache 20 index_page #}
+    {% include "menu.html" with index=True %}
+    {% for post in page %}
+        {% load thumbnail %}
+        <a style="text-decoration:none; color: #000" href="{% url 'post' username=post.author.username post_id=post.id %}
+            " role="button">
+            {% include "post_item.html" with post=post %}
+        </a>
+    {% endfor %}
+
+    {% include "paginator.html" %}
+    {# endcache #}
+{% endblock %}
