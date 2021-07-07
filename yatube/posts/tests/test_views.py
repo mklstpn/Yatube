@@ -170,38 +170,30 @@ class PostPagesTests(TestCase):
 
     def test_authorized_user_can_follow_other_user(self):
         """Авторизованный пользователь может подписаться"""
+        self.follow_count = Follow.objects.count()
         self.authorized_client.get(
             reverse('profile_follow', kwargs={
                     'username': self.author.username})
         )
+        self.assertEqual(Follow.objects.count(), self.follow_count + 1)
         self.assertTrue(Follow.objects.filter(
             user=self.user, author=self.author).exists())
 
     def test_authorized_user_can_unfollow_other(self):
         """Не авторизованный пользователь не может подписаться"""
-        self.authorized_client.get(
-            reverse('profile_unfollow', kwargs={
-                    'username': self.author.username})
-        )
         self.assertFalse(Follow.objects.filter(
             user=self.user, author=self.author
         ).exists())
 
     def test_new_post_appear_only_for_followers(self):
         """Новый пост появляется только у фолловеров"""
-        self.authorized_client.get(
-            reverse('profile_follow', kwargs={
-                'username': self.author.username})
-        )
+        Follow.objects.create(
+            user=self.user, author=self.author)
         response = self.authorized_client.get(reverse('follow_index'))
         post_correct_context(self, response)
 
     def test_new_post_not_appear_for_unfollowers(self):
         """Новый пост не появляется только у неподписавшихся пользователей"""
-        self.authorized_client.get(
-            reverse('profile_unfollow', kwargs={
-                'username': self.author.username})
-        )
         response = self.authorized_client.get(reverse('follow_index'))
         object = response.context['page']
         self.assertNotIn(self.post, object)

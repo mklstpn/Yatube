@@ -56,12 +56,16 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         """Форма добавляет новый пост."""
-        self.posts_count = Post.objects.count()
+        uploaded = SimpleUploadedFile(
+            name='big.gif',
+            content=self.small_gif,
+            content_type='image/gif'
+        )
+        posts_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.id,
-            'author': self.author,
-            'image': self.uploaded,
+            'image': uploaded,
         }
         response = self.authorized_client.post(
             reverse('new_post'),
@@ -70,11 +74,11 @@ class PostCreateFormTests(TestCase):
         )
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(Post.objects.count(), self.posts_count + 1)
-        post_get = Post.objects.first()
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+        post_get = Post.objects.get(pk=2)
         self.assertEqual(post_get.text, form_data['text'])
         self.assertEqual(post_get.group, self.group)
-        self.assertEqual(post_get.author, form_data['author'])
+        self.assertContains(response, '<img')
 
     def test_edit_post(self):
         """Форма проверяет редактирование поста."""
@@ -116,12 +120,16 @@ class PostCreateFormTests(TestCase):
 
         self.assertTrue(
             Comment.objects.filter(
+                post=self.post.id,
+                author=self.author,
                 text='Текст комментария',
             ).exists()
         )
 
     def test_unauthorized_user_can_not_add_comment(self):
         """Форма проверяет добавление коммента."""
+        self.comment_count = Comment.objects.count()
+
         form_data = {
             'text': 'Текст неавторизованного комментария',
         }
@@ -132,6 +140,7 @@ class PostCreateFormTests(TestCase):
             data=form_data, follow=True
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(Comment.objects.count(), self.comment_count)
 
         self.assertFalse(
             Comment.objects.filter(

@@ -3,8 +3,8 @@
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
     {% load cache %}
-    {# cache 20 index_page #}
     {% include "menu.html" with index=True %}
+    {% cache 20 index_page %}
     {% for post in page %}
         {% load thumbnail %}
         <a style="text-decoration:none; color: #000" href="{% url 'post' username=post.author.username post_id=post.id %}
@@ -12,7 +12,7 @@
             {% include "post_item.html" with post=post %}
         </a>
     {% endfor %}
+    {% endcache %}
 
     {% include "paginator.html" %}
-    {# endcache #}
 {% endblock %}
