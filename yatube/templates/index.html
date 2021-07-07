@@ -5,13 +5,13 @@
     {% load cache %}
     {% include "menu.html" with index=True %}
     {% cache 20 index_page %}
-    {% for post in page %}
-        {% load thumbnail %}
-        <a style="text-decoration:none; color: #000" href="{% url 'post' username=post.author.username post_id=post.id %}
-            " role="button">
-            {% include "post_item.html" with post=post %}
-        </a>
-    {% endfor %}
+        {% for post in page %}
+            {% load thumbnail %}
+            <a style="text-decoration:none; color: #000" href="{% url 'post' username=post.author.username post_id=post.id %}
+                " role="button">
+                {% include "post_item.html" with post=post %}
+            </a>
+        {% endfor %}
     {% endcache %}
 
     {% include "paginator.html" %}

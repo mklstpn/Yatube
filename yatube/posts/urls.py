@@ -1,7 +1,8 @@
-from django.urls import path
 from django.conf.urls import handler404, handler500
+from django.urls import path
 
 from . import views
+
 handler404 = "posts.views.page_not_found"
 handler500 = "posts.views.server_error"
 
