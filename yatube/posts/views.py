@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 
 
+@cache_page(20)
 def index(request):
     post_list = Post.objects.all()
     paginator = Paginator(post_list, 10)
@@ -96,10 +98,10 @@ def follow_index(request):
 def profile_follow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
-    follow_objects = Follow.objects.filter(user=user, author=author)
-    if user == author or (follow_objects.count() == 1):
-        return redirect('profile', username=author.username)
-    Follow.objects.get_or_create(user=user, author=author)
+    if user.username != username:
+        # такая запись не работает т.к. не хватает author_id
+        # Follow.objects.get_or_create(user=user, author__username=username)
+        Follow.objects.get_or_create(user=user, author=author)
     return redirect('profile', username=username)
 
 
@@ -113,11 +115,11 @@ def profile_unfollow(request, username):
 def page_not_found(request, exception):
     return render(
         request,
-        "misc/404.html",
-        {"path": request.path},
+        'misc/404.html',
+        {'path': request.path},
         status=404
     )
 
 
 def server_error(request):
-    return render(request, "misc/500.html", status=500)
+    return render(request, 'misc/500.html', status=500)

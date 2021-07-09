@@ -3,6 +3,7 @@ import shutil
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -32,6 +33,7 @@ class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # 'MEDIA_ROOT' отправлено в __init__.py
         cls.author = User.objects.create_user(username='author')
         cls.user = User.objects.create_user(username='user_views')
         cls.small_gif = (
@@ -70,6 +72,7 @@ class PostPagesTests(TestCase):
         super().tearDownClass()
 
     def setUp(self):
+        cache.clear()
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -179,8 +182,14 @@ class PostPagesTests(TestCase):
         self.assertTrue(Follow.objects.filter(
             user=self.user, author=self.author).exists())
 
-    def test_authorized_user_can_unfollow_other(self):
+    def test_unauthorized_user_cant_follow_other(self):
         """Не авторизованный пользователь не может подписаться"""
+        self.follow_count = Follow.objects.count()
+        self.guest_client.get(
+            reverse('profile_follow', kwargs={
+                'username': self.author.username})
+        )
+        self.assertEqual(Follow.objects.count(), self.follow_count)
         self.assertFalse(Follow.objects.filter(
             user=self.user, author=self.author
         ).exists())
@@ -197,6 +206,25 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(reverse('follow_index'))
         object = response.context['page']
         self.assertNotIn(self.post, object)
+
+    def test_cache_index_check(self):
+        cache.clear()
+        new_post = Post.objects.create(
+            text='Тестовый кеш',
+            author=self.author,
+            group=self.group,
+        )
+        response_clear = self.authorized_client.get(reverse('index'))
+        test_post_clear = response_clear.context['page'][0]
+        self.assertEqual(test_post_clear, new_post)
+        Post.objects.filter(id=new_post.id).delete()
+        response_cached = self.authorized_client.get(reverse('index'))
+        test_post_cached = response_cached.context
+        self.assertIsNone(test_post_cached)
+        cache.clear()
+        response_cleared = self.authorized_client.get(reverse('index'))
+        test_post_cleared = response_cleared.context['page'][0]
+        self.assertNotEqual(test_post_cleared, new_post)
 
 
 class PaginatorViewsTest(TestCase):

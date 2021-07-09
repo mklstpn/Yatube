@@ -1,5 +1,4 @@
 import shutil
-import tempfile
 from http import HTTPStatus
 
 from django.conf import settings
@@ -18,7 +17,6 @@ class PostCreateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.author = User.objects.create_user(username='editor')
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
         cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -57,7 +55,7 @@ class PostCreateFormTests(TestCase):
     def test_create_post(self):
         """Форма добавляет новый пост."""
         uploaded = SimpleUploadedFile(
-            name='big.gif',
+            name='bigol.gif',
             content=self.small_gif,
             content_type='image/gif'
         )
@@ -70,15 +68,14 @@ class PostCreateFormTests(TestCase):
         response = self.authorized_client.post(
             reverse('new_post'),
             data=form_data,
-            follow=True
+            follow=True,
         )
-
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(Post.objects.count(), posts_count + 1)
         post_get = Post.objects.get(pk=2)
         self.assertEqual(post_get.text, form_data['text'])
         self.assertEqual(post_get.group, self.group)
-        self.assertContains(response, '<img')
+        self.assertEqual(post_get.image.name, f'posts/{uploaded.name}')
 
     def test_edit_post(self):
         """Форма проверяет редактирование поста."""
@@ -144,6 +141,8 @@ class PostCreateFormTests(TestCase):
 
         self.assertFalse(
             Comment.objects.filter(
+                post=self.post.id,
+                author=self.author,
                 text='Текст неавторизованного комментария',
             ).exists()
         )
