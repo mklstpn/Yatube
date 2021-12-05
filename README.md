@@ -1,3 +1,43 @@
-# hw05_final
+# Проект Yatube
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+## Описание
+
+#### Проект Yatube учебный проекты социальной сети с подписками, комментариями и постами. 
+
+## Как запустить проект:
+
+Создать и активировать виртуальное окружение:
+
+```
+python -m venv venv
+```
+
+```
+source env/Scripts/activate
+```
+
+```
+python -m pip install --upgrade pip
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+pip install -r requirements.txt
+```
+
+Выполнить миграции:
+
+```
+python manage.py migrate
+```
+
+Запустить проект:
+
+```
+python manage.py runserver
+```
+
+#### Адрес сервера
+
+http://127.0.0.1:8000/
