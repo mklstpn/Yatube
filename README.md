@@ -1,12 +1,12 @@
 # Yatube
 
-## Описание
+## Description
 
-#### Yatube  - учебный проект социальной сети с подписками, комментариями и постами. 
+#### Yatube - pet-project of social network with subscriptons, comments and posts.
 
-## Как запустить проект:
+## How to run:
 
-Создать и активировать виртуальное окружение:
+Create and activate virtual env:
 
 ```
 python -m venv venv
@@ -20,24 +20,23 @@ source env/Scripts/activate
 python -m pip install --upgrade pip
 ```
 
-Установить зависимости из файла requirements.txt:
+Install dependencies from requirements.txt:
 
 ```
 pip install -r requirements.txt
 ```
-
-Выполнить миграции:
+Run migrations:
 
 ```
 python manage.py migrate
 ```
 
-Запустить проект:
+Run project:
 
 ```
 python manage.py runserver
 ```
 
-#### Адрес сервера
+#### Server address:
 
 http://127.0.0.1:8000/
